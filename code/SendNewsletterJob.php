@@ -35,15 +35,17 @@ class SendNewsletterJob extends AbstractQueuedJob {
 		$type       = $newsletter->getNewsletterType();
 		$from       = $type && $type->FromEmail ? $type->FromEmail : Email::getAdminEmail();
 
-		$process = new NewsletterEmailProcess(
-			$newsletter->Subject,
-			$from,
-			$newsletter,
-			$type,
-			base64_encode($newsletter->ID . '_' . date('d-m-Y H:i:s')),
-			$type->Group()->Members()
-		);
-		$process->start();
+		if ($newsletter->Status == 'Draft') {
+			$process = new NewsletterEmailProcess(
+				$newsletter->Subject,
+				$from,
+				$newsletter,
+				$type,
+				base64_encode($newsletter->ID . '_' . date('d-m-Y H:i:s')),
+				$type->Group()->Members()
+			);
+			$process->start();
+		}
 
 		$this->currentStep = 1;
 		$this->isComplete = true;
